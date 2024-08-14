@@ -1,3 +1,5 @@
+use ureq::AgentBuilder;
+
 /// All the functions in the file are exposed from inside WASM plugins
 use crate::*;
 
@@ -211,7 +213,10 @@ pub(crate) fn http_request(
             )));
         }
 
-        let mut r = ureq::request(req.method.as_deref().unwrap_or("GET"), &req.url);
+        let proxy = ureq::Proxy::new("tcp://127.0.0.1:1080")?;
+        let agent = AgentBuilder::new().proxy(proxy).build();
+
+        let mut r = agent.request(req.method.as_deref().unwrap_or("GET"), &req.url);
 
         for (k, v) in req.headers.iter() {
             r = r.set(k, v);
